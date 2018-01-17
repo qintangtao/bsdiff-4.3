@@ -10,6 +10,8 @@ LOCAL_SRC_FILES :=  bsdiff.c xmd5.c \
 					../../bzip2-1.0.6/crctable.c \
 					../../bzip2-1.0.6/randtable.c \
 					../../bzip2-1.0.6/huffman.c
+LOCAL_CFLAGS += -pie -fPIE
+LOCAL_LDFLAGS += -pie -fPIE
 include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
@@ -22,4 +24,6 @@ LOCAL_SRC_FILES :=  bspatch.c xmd5.c \
 					../../bzip2-1.0.6/crctable.c \
 					../../bzip2-1.0.6/randtable.c \
 					../../bzip2-1.0.6/huffman.c
+LOCAL_CFLAGS += -pie -fPIE
+LOCAL_LDFLAGS += -pie -fPIE
 include $(BUILD_EXECUTABLE)
