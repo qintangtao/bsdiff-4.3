@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bzlib.h"
+#include "xmd5.h"
 
 #define MIN(x,y) (((x)<(y)) ? (x) : (y))
 
@@ -34,6 +35,11 @@
 #define O_WRONLY        0x0001
 #define O_CREAT         0x0100
 #define O_TRUNC         0x0200
+
+#define	CTRL_BLOCK_OFFSET	40
+#define DIFF_BLOCK_OFFSET	48
+#define NEW_SIZE_OFFSET		56
+#define HEADER_SIZE			64
 
 typedef int  ssize_t;
 typedef long off_t;
@@ -222,7 +228,8 @@ int main(int argc,char *argv[])
 	off_t dblen,eblen;
 	u_char *db,*eb;
 	u_char buf[8];
-	u_char header[32];
+	u_char header[64];
+	char md5sum[33];
 	FILE * pf;
 	BZFILE * pfbz2;
 	int bz2err;
@@ -232,12 +239,13 @@ int main(int argc,char *argv[])
 	/* Allocate oldsize+1 bytes instead of oldsize bytes to ensure
 		that we never try to malloc(0) and get a NULL pointer */
 	if(((fd=fopen(argv[1], "rb"))==NULL) ||
-		((oldsize=fseek(fd,0,SEEK_END))==-1) ||
+		(fseek(fd,0,SEEK_END)!=0) ||
+		((oldsize=ftell(fd))<0) ||
 		((old=malloc(oldsize+1))==NULL) ||
 		(fseek(fd,0,SEEK_SET)!=0) ||
 		(fread(old,1,oldsize,fd)!=oldsize) ||
 		(fclose(fd)==-1)) err(1,"%s",argv[1]);
-
+	//printf("oldsize: %d\n", oldsize);
 	if(((I=malloc((oldsize+1)*sizeof(off_t)))==NULL) ||
 		((V=malloc((oldsize+1)*sizeof(off_t)))==NULL)) err(1,NULL);
 
@@ -254,14 +262,14 @@ int main(int argc,char *argv[])
 		(fseek(fd,0,SEEK_SET)!=0) ||
 		(fread(newb,1,newsize,fd)!=newsize) ||
 		(fclose(fd)==-1)) err(1,"%s",argv[2]);
-
+	//printf("newsize: %d\n", newsize);
 	if(((db=malloc(newsize+1))==NULL) ||
 		((eb=malloc(newsize+1))==NULL)) err(1,NULL);
 	dblen=0;
 	eblen=0;
 	
 	/* Create the patch file */
-	if ((pf = fopen(argv[3], "wb")) == NULL)
+	if ((pf = fopen(argv[3], "wb+")) == NULL)
 		err(1, "%s", argv[3]);
 
 	/* Header is
@@ -274,11 +282,12 @@ int main(int argc,char *argv[])
 		32	??	Bzip2ed ctrl block
 		??	??	Bzip2ed diff block
 		??	??	Bzip2ed extra block */
+	memset(header, 0, HEADER_SIZE);
 	memcpy(header,"BSDIFF40",8);
-	offtout(0, header + 8);
-	offtout(0, header + 16);
-	offtout(newsize, header + 24);
-	if (fwrite(header, 32, 1, pf) != 1)
+	offtout(0, header + CTRL_BLOCK_OFFSET);
+	offtout(0, header + DIFF_BLOCK_OFFSET);
+	offtout(newsize, header + NEW_SIZE_OFFSET);
+	if (fwrite(header, HEADER_SIZE, 1, pf) != 1)
 		err(1, "fwrite(%s)", argv[3]);
 	
 	/* Compute the differences, writing ctrl as we go */
@@ -373,7 +382,7 @@ int main(int argc,char *argv[])
 	/* Compute size of compressed ctrl data */
 	if ((len = ftell(pf)) == -1)
 		err(1, "ftello");
-	offtout(len-32, header + 8);
+	offtout(len-HEADER_SIZE, header + CTRL_BLOCK_OFFSET);	
 
 	/* Write compressed diff data */
 	if ((pfbz2 = BZ2_bzWriteOpen(&bz2err, pf, 9, 0, 0)) == NULL)
@@ -388,8 +397,8 @@ int main(int argc,char *argv[])
 	/* Compute size of compressed diff data */
 	if ((newsize = ftell(pf)) == -1)
 		err(1, "ftello");
-	offtout(newsize - len, header + 16);
-
+	offtout(newsize - len, header + DIFF_BLOCK_OFFSET);
+	
 	/* Write compressed extra data */
 	if ((pfbz2 = BZ2_bzWriteOpen(&bz2err, pf, 9, 0, 0)) == NULL)
 		errx(1, "BZ2_bzWriteOpen, bz2err = %d", bz2err);
@@ -403,7 +412,17 @@ int main(int argc,char *argv[])
 	/* Seek to the beginning, write the header, and close the file */
 	if (fseek(pf, 0, SEEK_SET))
 		err(1, "fseeko");
-	if (fwrite(header, 32, 1, pf) != 1)
+	if (fwrite(header, HEADER_SIZE, 1, pf) != 1)
+		err(1, "fwrite(%s)", argv[3]);
+	if (fflush(pf) != 0)
+		err(1, "fflush");
+	if (fseek(pf, 40, SEEK_SET))
+		err(1, "fseeko");
+	if (md5sum_fp_to_string(pf, md5sum) == 0)
+		err(1, "md5sum");
+	if (fseek(pf, 8, SEEK_SET))
+		err(1, "fseeko");
+	if (fwrite(md5sum, 32, 1, pf) != 1)
 		err(1, "fwrite(%s)", argv[3]);
 	if (fclose(pf))
 		err(1, "fclose");

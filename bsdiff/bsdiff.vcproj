@@ -202,6 +202,10 @@
 				RelativePath=".\randtable.c"
 				>
 			</File>
+			<File
+				RelativePath=".\xmd5.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -214,6 +218,10 @@
 			</File>
 			<File
 				RelativePath=".\bzlib_private.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xmd5.h"
 				>
 			</File>
 		</Filter>

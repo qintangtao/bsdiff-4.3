@@ -27,11 +27,17 @@
 #include <stdio.h>
 #include <string.h>
 #include "bzlib.h"
+#include "xmd5.h"
 
 #define O_RDONLY        0x0000
 #define O_WRONLY        0x0001
 #define O_CREAT         0x0100
 #define O_TRUNC         0x0200
+
+#define	CTRL_BLOCK_OFFSET	40
+#define DIFF_BLOCK_OFFSET	48
+#define NEW_SIZE_OFFSET		56
+#define HEADER_SIZE			64
 
 typedef int  ssize_t;
 typedef long off_t;
@@ -70,13 +76,13 @@ int main(int argc,char * argv[])
 	FILE* fd;
 	ssize_t oldsize,newsize;
 	ssize_t bzctrllen,bzdatalen;
-	u_char header[32],buf[8];
+	u_char header[64],buf[8];
+	char md5sum[33];
 	u_char *old, *newb;
 	off_t oldpos,newpos;
 	off_t ctrl[3];
 	off_t lenread;
 	off_t i;
-	size_t writesize;
 
 	if(argc!=4) err(1,"usage: %s oldfile newfile patchfile\n",argv[0]);
 
@@ -99,50 +105,58 @@ int main(int argc,char * argv[])
 	*/
 
 	/* Read header */
-	if (fread(header, 1, 32, f) < 32) {
+	if (fread(header, 1, HEADER_SIZE, f) < HEADER_SIZE) {
 		if (feof(f))
-			err(1, "Corrupt patch\n");
+			err(1, "Corrupt patch 1\n");
 		err(1, "fread(%s)", argv[3]);
 	}
 
 	/* Check for appropriate magic */
 	if (memcmp(header, "BSDIFF40", 8) != 0)
-		err(1, "Corrupt patch\n");
+		err(1, "Corrupt patch BSDIFF40\n");
 
 	/* Read lengths from header */
-	bzctrllen=offtin(header+8);
-	bzdatalen=offtin(header+16);
-	newsize=offtin(header+24);
+	bzctrllen=offtin(header+CTRL_BLOCK_OFFSET);
+	bzdatalen=offtin(header+DIFF_BLOCK_OFFSET);
+	newsize=offtin(header+NEW_SIZE_OFFSET);
+	//printf("%x %x %x\n", bzctrllen, bzdatalen, newsize);
 	if((bzctrllen<0) || (bzdatalen<0) || (newsize<0))
 		err(1,"Corrupt patch\n");
+	if (fseek(f, 40, SEEK_SET))
+		err(1, "fseek");
+	if (md5sum_fp_to_string(f, md5sum) == 0)
+		err(1, "md5sum");
+	if (memcmp(md5sum, header+8, 32) != 0)
+		err(1, "md5sum is not eq");
 
 	/* Close patch file and re-open it via libbzip2 at the right places */
 	if (fclose(f))
 		err(1, "fclose(%s)", argv[3]);
 	if ((cpf = fopen(argv[3], "rb")) == NULL)
 		err(1, "fopen(%s)", argv[3]);
-	if (fseek(cpf, 32, SEEK_SET))
+	if (fseek(cpf, HEADER_SIZE, SEEK_SET))
 		err(1, "fseeko(%s, %lld)", argv[3],
-		    (long long)32);
+		    (long long)HEADER_SIZE);
 	if ((cpfbz2 = BZ2_bzReadOpen(&cbz2err, cpf, 0, 0, NULL, 0)) == NULL)
 		err(1, "BZ2_bzReadOpen, bz2err = %d", cbz2err);
 	if ((dpf = fopen(argv[3], "rb")) == NULL)
 		err(1, "fopen(%s)", argv[3]);
-	if (fseek(dpf, 32 + bzctrllen, SEEK_SET))
+	if (fseek(dpf, HEADER_SIZE + bzctrllen, SEEK_SET))
 		err(1, "fseeko(%s, %lld)", argv[3],
-		    (long long)(32 + bzctrllen));
+		    (long long)(HEADER_SIZE + bzctrllen));
 	if ((dpfbz2 = BZ2_bzReadOpen(&dbz2err, dpf, 0, 0, NULL, 0)) == NULL)
 		err(1, "BZ2_bzReadOpen, bz2err = %d", dbz2err);
 	if ((epf = fopen(argv[3], "rb")) == NULL)
 		err(1, "fopen(%s)", argv[3]);
-	if (fseek(epf, 32 + bzctrllen + bzdatalen, SEEK_SET))
+	if (fseek(epf, HEADER_SIZE + bzctrllen + bzdatalen, SEEK_SET))
 		err(1, "fseeko(%s, %lld)", argv[3],
-		    (long long)(32 + bzctrllen + bzdatalen));
+		    (long long)(HEADER_SIZE + bzctrllen + bzdatalen));
 	if ((epfbz2 = BZ2_bzReadOpen(&ebz2err, epf, 0, 0, NULL, 0)) == NULL)
 		err(1, "BZ2_bzReadOpen, bz2err = %d", ebz2err);
 
 	if(((fd=fopen(argv[1],"rb"))==NULL) ||
-		((oldsize=fseek(fd,0,SEEK_END))==-1) ||
+		(fseek(fd,0,SEEK_END)!=0) ||
+		((oldsize=ftell(fd))<0) ||
 		((old=malloc(oldsize+1))==NULL) ||
 		(fseek(fd,0,SEEK_SET)!=0) ||
 		(fread(old,1,oldsize,fd)!=oldsize) ||
