@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bzlib.h"
+#include "../bzip2-1.0.6/bzlib.h"
 #include "xmd5.h"
 
 #define MIN(x,y) (((x)<(y)) ? (x) : (y))

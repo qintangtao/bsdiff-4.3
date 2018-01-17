@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -171,7 +172,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\blocksort.c"
+				RelativePath="..\bzip2-1.0.6\blocksort.c"
 				>
 			</File>
 			<File
@@ -179,27 +180,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\bzlib.c"
+				RelativePath="..\bzip2-1.0.6\bzlib.c"
 				>
 			</File>
 			<File
-				RelativePath=".\compress.c"
+				RelativePath="..\bzip2-1.0.6\compress.c"
 				>
 			</File>
 			<File
-				RelativePath=".\crctable.c"
+				RelativePath="..\bzip2-1.0.6\crctable.c"
 				>
 			</File>
 			<File
-				RelativePath=".\decompress.c"
+				RelativePath="..\bzip2-1.0.6\decompress.c"
 				>
 			</File>
 			<File
-				RelativePath=".\huffman.c"
+				RelativePath="..\bzip2-1.0.6\huffman.c"
 				>
 			</File>
 			<File
-				RelativePath=".\randtable.c"
+				RelativePath="..\bzip2-1.0.6\randtable.c"
 				>
 			</File>
 			<File
@@ -213,11 +214,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\bzlib.h"
+				RelativePath="..\bzip2-1.0.6\bzlib.h"
 				>
 			</File>
 			<File
-				RelativePath=".\bzlib_private.h"
+				RelativePath="..\bzip2-1.0.6\bzlib_private.h"
 				>
 			</File>
 			<File

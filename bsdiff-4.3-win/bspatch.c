@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "bzlib.h"
+#include "../bzip2-1.0.6/bzlib.h"
 #include "xmd5.h"
 
 #define O_RDONLY        0x0000

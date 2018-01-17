@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bspatch", "bspatch\bspatch.vcproj", "{C9C0535A-7096-4B29-8ED0-2F9BEC0056D9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bspatch", "bsdiff-4.3-win\bspatch.vcproj", "{C9C0535A-7096-4B29-8ED0-2F9BEC0056D9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bsdiff", "bsdiff\bsdiff.vcproj", "{096B452E-04D3-4F7B-970C-2FCB7A077E98}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bsdiff", "bsdiff-4.3-win\bsdiff.vcproj", "{096B452E-04D3-4F7B-970C-2FCB7A077E98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
