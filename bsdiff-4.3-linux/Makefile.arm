@@ -12,34 +12,26 @@
 # in the file LICENSE.
 # ------------------------------------------------------------------
 CC=arm-linux-gcc
-CFLAGS=-Wall -Winline -O2 -I ../bzip2-1.0.6 
-LIBS=-L ../bzip2-1.0.6 -lbz2
+CFLAGS=-Wall -O2 -I../bzip2-1.0.6 
+LIBS=-L../bzip2-1.0.6 -lbz2
 
 # Where you want it installed when you do 'make install'
+DPRG=bsdiff
+DOBJS= xmd5.o \
+      bsdiff.o
 
-OBJS= xmd5.o \
-      bsdiff.o \
+PPRG=bspatch
+POBJS= xmd5.o \
       bspatch.o
 
-all: bsdiff bspatch
+all: $(DPRG) $(PPRG)
 
 
-bsdiff: xmd5.o bsdiff.o
-	$(CC) $(CFLAGS) -o bsdiff xmd5.o bsdiff.o $(LIBS)
+$(DPRG): $(DOBJS)
+	$(CC) $(CFLAGS) -o $@ $? $(LIBS)
 
-bspatch: xmd5.o bspatch.o
-	$(CC) $(CFLAGS) -o bspatch xmd5.o bspatch.o $(LIBS)
-
+$(PPRG): $(POBJS)
+	$(CC) $(CFLAGS) -o $@ $? $(LIBS)
 
 clean: 
-	rm -f *.o 
-	rm -f bsdiff
-	rm -f bspatch
-
-xmd5.o: xmd5.c
-	$(CC) $(CFLAGS) -c xmd5.c
-bsdiff.o: bsdiff.c
-	$(CC) $(CFLAGS) -c bsdiff.c
-bspatch.o: bspatch.c
-	$(CC) $(CFLAGS) -c bspatch.c
-
+	$(RM) *.o $(DPRG) $(PPRG) 

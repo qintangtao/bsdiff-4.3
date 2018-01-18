@@ -205,7 +205,7 @@ int main(int argc,char *argv[])
 	u_char *old,*new;
 	off_t oldsize,newsize;
 	off_t *I,*V;
-	off_t scan,pos,len;
+	off_t scan,pos=0,len;
 	off_t lastscan,lastpos,lastoffset;
 	off_t oldscore,scsc;
 	off_t s,Sf,lenf,Sb,lenb;
