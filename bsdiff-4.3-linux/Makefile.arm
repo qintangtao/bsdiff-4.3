@@ -11,7 +11,7 @@
 # This program is released under the terms of the license contained
 # in the file LICENSE.
 # ------------------------------------------------------------------
-CC=gcc
+CC=arm-linux-gcc
 CFLAGS=-Wall -Winline -O2 -I ../bzip2-1.0.6 
 LIBS=-L ../bzip2-1.0.6 -lbz2
 

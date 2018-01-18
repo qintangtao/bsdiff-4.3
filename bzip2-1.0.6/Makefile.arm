@@ -15,10 +15,9 @@
 SHELL=/bin/sh
 
 # To assist in cross-compiling
-COMPILE=/opt/FriendlyARM/toolschain/4.5.1/bin
-CC=$(COMPILE)/arm-linux-gcc
-AR=$(COMPILE)/arm-linux-ar
-RANLIB=$(COMPILE)/arm-linux-ranlib
+CC=arm-linux-gcc
+AR=arm-linux-ar
+RANLIB=arm-linux-ranlib
 LDFLAGS=
 
 BIGFILES=-D_FILE_OFFSET_BITS=64
